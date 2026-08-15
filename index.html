@@ -1619,6 +1619,7 @@ function applyWard(){curWard=document.getElementById("fWard").value;render();}
 
 /* English report export (client-side, zero-cost, print to PDF) */
 function statusEN(s){return s==="Baru"?"Pending":s==="Dijawab"?"Answered":s==="Selesai"?"Resolved":s;}
+function statusMS(s){return s==="Baru"?"Menunggu":s==="Dijawab"?"Dijawab":s==="Selesai"?"Selesai":s;}
 function latestWardAction(it){
   const th=(it.thread||[]).filter(e=>e.by==="WARD");
   if(th.length) return th[th.length-1].text;
@@ -1634,16 +1635,18 @@ function reportImgs(it){
   return `<div class="imgs">${urls.map(u=>`<img src="${esc(u)}" referrerpolicy="no-referrer">`).join("")}</div>`;
 }
 function reportHTML(list){
+  const RL=lang==='ms'?'ms':'en';
+  const rl=(en,ms)=>RL==='ms'?ms:en;
   const gen=fmtDate(new Date().toISOString());
   const rows=list.map((it,i)=>{
     const resp=latestWardAction(it);
     return `<tr>
       <td class="cno">${i+1}</td>
       <td class="cfind" contenteditable="true">
-        <div class="fmeta">Ward ${esc(it.wad)} &middot; ${esc(it.kategori)} &middot; Severity: ${esc(it.keterukan||"-")} &middot; <b>${statusEN(it.status)}</b> &middot; ${esc(fmtDate(it.tarikh))}</div>
+        <div class="fmeta">${rl("Ward","Wad")} ${esc(it.wad)} &middot; ${esc(catLabel(it.kategori))} &middot; ${rl("Severity","Keterukan")}: ${esc(it.keterukan||"-")} &middot; <b>${RL==='ms'?statusMS(it.status):statusEN(it.status)}</b> &middot; ${esc(fmtDate(it.tarikh))}</div>
         <div class="ftxt">${esc(it.tajuk)}</div>
         ${reportImgs(it)}
-        ${resp?`<div class="fresp"><b>Ward corrective action:</b> ${esc(resp)}</div>`:""}
+        ${resp?`<div class="fresp"><b>${rl("Ward corrective action","Tindakan pembetulan wad")}:</b> ${esc(resp)}</div>`:""}
       </td>
       <td class="crec" contenteditable="true">${it.recommendation?esc(it.recommendation):'<span class="dash">&mdash;</span>'}</td>
     </tr>`;
@@ -1675,31 +1678,29 @@ function reportHTML(list){
    @media print{.btns{display:none}body{background:#fff}.doc{padding:0;max-width:100%}[contenteditable="true"]{background:transparent!important;box-shadow:none!important}}
    </style></head><body>
    <div class="btns">
-     <button onclick="window.print()">🖨️ Print / Save as PDF</button>
-     <button onclick="saveWord()">📝 Save as Word</button>
-     <label><input type="checkbox" id="pp" checked onchange="document.body.classList.toggle('nophoto',!this.checked)"> Include photos</label>
+     <button onclick="window.print()">🖨️ ${rl("Print / Save as PDF","Cetak / Simpan PDF")}</button>
+     <button onclick="saveWord()">📝 ${rl("Save as Word","Simpan Word")}</button>
+     <label><input type="checkbox" id="pp" checked onchange="document.body.classList.toggle('nophoto',!this.checked)"> ${rl("Include photos","Sertakan gambar")}</label>
      <div class="hint">Tip: tap any highlighted field to edit — title, date, location, background, methodology, findings, recommendations, summary &amp; names — before printing.</div>
    </div>
    <div class="doc">
      <div class="rhead">
        <div class="hosp">HOSPITAL TENGKU PERMAISURI NORASHIKIN (HTPN), KAJANG</div>
-       <div class="rtitle" contenteditable="true">INFECTION PREVENTION &amp; CONTROL FINDINGS REPORT</div>
+       <div class="rtitle" contenteditable="true">${rl("INFECTION PREVENTION & CONTROL FINDINGS REPORT","LAPORAN PENEMUAN PENCEGAHAN & KAWALAN INFEKSI")}</div>
      </div>
      <div class="meta2">
-       <div><b>Date:</b> <span contenteditable="true">${gen}</span></div>
-       <div><b>Location:</b> <span contenteditable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
-       <div><b>Total findings:</b> ${list.length}</div>
+       <div><b>${rl("Date","Tarikh")}:</b> <span contenteditable="true">${gen}</span></div>
+       <div><b>${rl("Location","Lokasi")}:</b> <span contenteditable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+       <div><b>${rl("Total findings","Jumlah penemuan")}:</b> ${list.length}</div>
      </div>
-     <div class="sec"><div class="sh">Background</div><div class="sb" contenteditable="true">The Infection Prevention and Control (IPC) team conducted a ward/area round to assess IPC compliance and to document findings requiring corrective action.</div></div>
-     <div class="sec"><div class="sh">Methodology</div><div class="sb" contenteditable="true">1. Walk-through observation of the area.
-2. Interview with the staff in charge.
-3. Assessment using the IPC round audit checklist.</div></div>
-     <table class="ft"><thead><tr><th class="hno">No</th><th>Findings / Observation</th><th class="hrec">Recommendation</th></tr></thead>
-       <tbody>${rows||'<tr><td colspan="3">No findings.</td></tr>'}</tbody></table>
-     <div class="sec"><div class="sh">Summary &amp; Recommendation</div><div class="sb" contenteditable="true">The findings above have been communicated to the respective wards/units for corrective action. Compliance will be re-assessed at the next IPC round.</div></div>
+     <div class="sec"><div class="sh">${rl("Background","Latar Belakang")}</div><div class="sb" contenteditable="true">${rl("The Infection Prevention and Control (IPC) team conducted a ward/area round to assess IPC compliance and to document findings requiring corrective action.","Pasukan Pencegahan dan Kawalan Infeksi (IPC) telah menjalankan round wad/kawasan untuk menilai pematuhan IPC dan merekod penemuan yang memerlukan tindakan pembetulan.")}</div></div>
+     <div class="sec"><div class="sh">${rl("Methodology","Metodologi")}</div><div class="sb" contenteditable="true">${rl("1. Walk-through observation of the area.\n2. Interview with the staff in charge.\n3. Assessment using the IPC round audit checklist.","1. Pemerhatian walk-through kawasan.\n2. Temu bual dengan staf bertugas.\n3. Penilaian menggunakan senarai semak audit IPC round.")}</div></div>
+     <table class="ft"><thead><tr><th class="hno">${rl("No","Bil")}</th><th>${rl("Findings / Observation","Penemuan / Pemerhatian")}</th><th class="hrec">${rl("Recommendation","Saranan")}</th></tr></thead>
+       <tbody>${rows||`<tr><td colspan="3">${rl("No findings.","Tiada penemuan.")}</td></tr>`}</tbody></table>
+     <div class="sec"><div class="sh">${rl("Summary & Recommendation","Ringkasan & Saranan")}</div><div class="sb" contenteditable="true">${rl("The findings above have been communicated to the respective wards/units for corrective action. Compliance will be re-assessed at the next IPC round.","Penemuan di atas telah dimaklumkan kepada wad/unit berkenaan untuk tindakan pembetulan. Pematuhan akan dinilai semula pada IPC round yang akan datang.")}</div></div>
      <div class="sign">
-       <div class="sblk"><div class="slbl">Prepared by:</div><div class="sline"></div><div contenteditable="true">${preparer}</div><div class="srole">Infection Prevention &amp; Control Unit, HTPN Kajang</div></div>
-       <div class="sblk"><div class="slbl">Reviewed by:</div><div class="sline"></div><div contenteditable="true">&nbsp;</div><div class="srole">Head, Infection Control Unit, HTPN Kajang</div></div>
+       <div class="sblk"><div class="slbl">${rl("Prepared by","Disediakan oleh")}:</div><div class="sline"></div><div contenteditable="true">${preparer}</div><div class="srole">Infection Prevention &amp; Control Unit, HTPN Kajang</div></div>
+       <div class="sblk"><div class="slbl">${rl("Reviewed by","Disemak oleh")}:</div><div class="sline"></div><div contenteditable="true">&nbsp;</div><div class="srole">Head, Infection Control Unit, HTPN Kajang</div></div>
      </div>
    </div>
    <script>
